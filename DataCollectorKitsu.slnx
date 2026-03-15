@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="DataCollectorKitsu/DataCollectorKitsu.fsproj" />
+  <Project Path="DataCollectorKitsu.Console/DataCollectorKitsu.Console.fsproj" />
+</Solution>
