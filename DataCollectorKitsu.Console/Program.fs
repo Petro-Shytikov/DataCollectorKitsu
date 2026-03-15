@@ -6,6 +6,9 @@ open System.Threading
 
 open Provider
 
+let getAssemblyVersion () =
+    System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString()
+
 [<EntryPoint>]
 let main _argv =
     let id =
@@ -15,6 +18,9 @@ let main _argv =
         |> Option.defaultValue 1
 
     printfn "Starting DataCollectorKitsu.Console with id: %d" id
+
+    let version = getAssemblyVersion ()
+    printfn "Assembly Version: %s" version
 
     let baseAddress = new Uri("https://kitsu.io/api/edge/")
     use client = new HttpClient(BaseAddress = baseAddress)
