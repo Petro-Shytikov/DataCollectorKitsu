@@ -2,7 +2,10 @@
 
 open Argu
 open Microsoft.Extensions.Configuration
+open Serilog
+open Serilog.Events
 open System
+open System.IO
 open System.Net.Http
 open System.Threading
 
@@ -10,6 +13,7 @@ open Provider
 
 type AppConfig = {
     BaseUrl: string
+    LogDirectory: string
 }
 
 type Args =
@@ -35,7 +39,33 @@ let loadConfig (env: string) : AppConfig =
             .Build()
     {
         BaseUrl = config.["BaseUrl"]
+        LogDirectory = config.["LogDirectory"]
     }
+
+let setupLogger (config: AppConfig) =
+    let allLogsPath = Path.Combine(config.LogDirectory, "all-.txt")
+    let infoLogsPath = Path.Combine(config.LogDirectory, "info-.txt")
+    let errorLogsPath = Path.Combine(config.LogDirectory, "errors-.txt")
+
+    let infoLogger = 
+        LoggerConfiguration()
+            .Filter.ByIncludingOnly(fun e -> e.Level <= LogEventLevel.Information)
+            .WriteTo.File(infoLogsPath, rollingInterval = RollingInterval.Day)
+            .CreateLogger()
+
+    let errorLogger = 
+        LoggerConfiguration()
+            .Filter.ByIncludingOnly(fun e -> e.Level >= LogEventLevel.Error)
+            .WriteTo.File(errorLogsPath, rollingInterval = RollingInterval.Day)
+            .CreateLogger()
+
+    Log.Logger <- 
+        LoggerConfiguration()
+            .WriteTo.Console()
+            .WriteTo.File(allLogsPath, rollingInterval = RollingInterval.Day)
+            .WriteTo.Logger(infoLogger)
+            .WriteTo.Logger(errorLogger)
+            .CreateLogger()
 
 [<EntryPoint>]
 let main argv =
@@ -43,13 +73,15 @@ let main argv =
     let results = parser.Parse(argv)
     let id = results.GetResult(Id, 1)
 
-    printfn "Starting DataCollectorKitsu.Console with id: %d" id
+    let env = getEnvironment ()
+    let config = loadConfig env
+
+    setupLogger config
 
     let version = getAssemblyVersion ()
-    printfn "Assembly Version: %s" version
-
-    let env = getEnvironment ()
-    printfn "Environment: %s" env
+    Log.Information("Assembly Version: {Version}", version)
+    Log.Information("Environment: {Environment}", env)
+    Log.Information("Starting DataCollectorKitsu.Console with id: {Id}", id)
 
     let config = loadConfig env
     let baseUrl = config.BaseUrl
@@ -60,10 +92,14 @@ let main argv =
             |> Async.AwaitTask
             |> Async.RunSynchronously
 
-    match result with
-    | Ok content ->
-        printfn "Content: %s" content
-        0
-    | Error error ->
-        printfn "Error: %s" error
-        1
+    let exitCode = 
+        match result with
+        | Ok content ->
+            Log.Information("Content: {Content}", content)
+            0
+        | Error error ->
+            Log.Error("Error: {Error}", error)
+            1
+
+    Log.CloseAndFlush()
+    exitCode
