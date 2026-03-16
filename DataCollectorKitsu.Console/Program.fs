@@ -3,11 +3,30 @@
 open System
 open System.Net.Http
 open System.Threading
+open Microsoft.Extensions.Configuration
 
 open Provider
 
+type AppConfig = {
+    BaseUrl: string
+}
+
 let getAssemblyVersion () =
     System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString()
+
+let getEnvironment () =
+    let envVar = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")
+    if isNull envVar then "Debug" else envVar
+
+let loadConfig (env: string) : AppConfig =
+    let config =
+        ConfigurationBuilder()
+            .AddJsonFile("appsettings.json")
+            .AddJsonFile($"appsettings.{env}.json", optional=true)
+            .Build()
+    {
+        BaseUrl = config.["BaseUrl"]
+    }
 
 [<EntryPoint>]
 let main _argv =
@@ -22,7 +41,12 @@ let main _argv =
     let version = getAssemblyVersion ()
     printfn "Assembly Version: %s" version
 
-    let baseAddress = new Uri("https://kitsu.io/api/edge/")
+    let env = getEnvironment ()
+    printfn "Environment: %s" env
+
+    let config = loadConfig env
+    let baseUrl = config.BaseUrl
+    let baseAddress = new Uri(baseUrl)
     use client = new HttpClient(BaseAddress = baseAddress)
     let result =
         getAnimeByIdAsync (new CancellationToken()) client id
