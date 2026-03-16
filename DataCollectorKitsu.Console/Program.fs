@@ -1,20 +1,12 @@
-﻿module DataCollectorKitsu.Console
-
-open Argu
-open Microsoft.Extensions.Configuration
+﻿open Argu
+open DataCollectorKitsu.Console.Configuration
+open DataCollectorKitsu.Provider
 open Serilog
 open Serilog.Events
 open System
 open System.IO
 open System.Net.Http
 open System.Threading
-
-open Provider
-
-type AppConfig = {
-    BaseUrl: string
-    LogDirectory: string
-}
 
 type Args =
     | Id of id:int
@@ -31,18 +23,7 @@ let getEnvironment () =
     let envVar = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")
     if isNull envVar then "Debug" else envVar
 
-let loadConfig (env: string) : AppConfig =
-    let config =
-        ConfigurationBuilder()
-            .AddJsonFile("appsettings.json")
-            .AddJsonFile($"appsettings.{env}.json", optional=true)
-            .Build()
-    {
-        BaseUrl = config.["BaseUrl"]
-        LogDirectory = config.["LogDirectory"]
-    }
-
-let setupLogger (config: AppConfig) =
+let setupLogger (config: AppConfiguration) =
     let allLogsPath = Path.Combine(config.LogDirectory, "all-.txt")
     let infoLogsPath = Path.Combine(config.LogDirectory, "info-.txt")
     let errorLogsPath = Path.Combine(config.LogDirectory, "errors-.txt")
@@ -74,7 +55,7 @@ let main argv =
     let id = results.GetResult(Id, 1)
 
     let env = getEnvironment ()
-    let config = loadConfig env
+    let config = loadConfiguration env
 
     setupLogger config
 
@@ -83,7 +64,6 @@ let main argv =
     Log.Information("Environment: {Environment}", env)
     Log.Information("Starting DataCollectorKitsu.Console with id: {Id}", id)
 
-    let config = loadConfig env
     let baseUrl = config.BaseUrl
     let baseAddress = new Uri(baseUrl)
     use client = new HttpClient(BaseAddress = baseAddress)
