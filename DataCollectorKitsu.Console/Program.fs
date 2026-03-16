@@ -8,14 +8,6 @@ open System.IO
 open System.Net.Http
 open System.Threading
 
-type Args =
-    | Id of id:int
-with
-    interface IArgParserTemplate with
-        member this.Usage =
-            match this with
-            | Id _ -> "The ID to fetch anime data for."
-
 let getAssemblyVersion () =
     System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString()
 
@@ -50,9 +42,9 @@ let setupLogger (config: AppConfiguration) =
 
 [<EntryPoint>]
 let main argv =
-    let parser = ArgumentParser.Create<Args>(programName = "DataCollectorKitsu.Console")
+    let parser = ArgumentParser.Create<DataCollectorKitsu.Console.CliArguments.Args>(programName = "DataCollectorKitsu.Console")
     let results = parser.Parse(argv)
-    let id = results.GetResult(Id, 1)
+    let id = results.GetResult(DataCollectorKitsu.Console.CliArguments.Id, 1)
 
     let env = getEnvironment ()
     let config = loadConfiguration env

@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <Compile Include="Configuration.fs" />
+    <Compile Include="CliArguments.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
