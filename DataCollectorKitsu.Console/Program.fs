@@ -1,15 +1,24 @@
 ﻿module DataCollectorKitsu.Console
 
+open Argu
+open Microsoft.Extensions.Configuration
 open System
 open System.Net.Http
 open System.Threading
-open Microsoft.Extensions.Configuration
 
 open Provider
 
 type AppConfig = {
     BaseUrl: string
 }
+
+type Args =
+    | Id of id:int
+with
+    interface IArgParserTemplate with
+        member this.Usage =
+            match this with
+            | Id _ -> "The ID to fetch anime data for."
 
 let getAssemblyVersion () =
     System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString()
@@ -29,12 +38,10 @@ let loadConfig (env: string) : AppConfig =
     }
 
 [<EntryPoint>]
-let main _argv =
-    let id =
-        _argv
-        |> Array.tryHead
-        |> Option.bind (fun s -> match Int32.TryParse(s) with | true, i -> Some i | false, _ -> None)
-        |> Option.defaultValue 1
+let main argv =
+    let parser = ArgumentParser.Create<Args>(programName = "DataCollectorKitsu.Console")
+    let results = parser.Parse(argv)
+    let id = results.GetResult(Id, 1)
 
     printfn "Starting DataCollectorKitsu.Console with id: %d" id
 
