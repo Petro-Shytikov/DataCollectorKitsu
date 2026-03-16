@@ -1,4 +1,5 @@
 ﻿open Argu
+open DataCollectorKitsu.Console.Common
 open DataCollectorKitsu.Console.Configuration
 open DataCollectorKitsu.Provider
 open Serilog
@@ -7,13 +8,6 @@ open System
 open System.IO
 open System.Net.Http
 open System.Threading
-
-let getAssemblyVersion () =
-    System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString()
-
-let getEnvironment () =
-    let envVar = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")
-    if isNull envVar then "Debug" else envVar
 
 let setupLogger (config: AppConfiguration) =
     let allLogsPath = Path.Combine(config.LogDirectory, "all-.txt")
