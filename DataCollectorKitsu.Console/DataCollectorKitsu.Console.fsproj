@@ -9,6 +9,7 @@
   <ItemGroup>
     <Compile Include="Common.fs" />
     <Compile Include="Configuration.fs" />
+    <Compile Include="Logger.fs" />
     <Compile Include="CliArguments.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
