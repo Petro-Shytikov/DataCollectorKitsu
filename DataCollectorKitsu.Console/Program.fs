@@ -1,7 +1,6 @@
 ﻿open Argu
+open DataCollectorKitsu.Console
 open DataCollectorKitsu.Console.Common
-open DataCollectorKitsu.Console.Configuration
-open DataCollectorKitsu.Console.Logger
 open DataCollectorKitsu.Provider
 open Serilog
 open System
@@ -10,14 +9,14 @@ open System.Threading
 
 [<EntryPoint>]
 let main argv =
-    let parser = ArgumentParser.Create<DataCollectorKitsu.Console.CliArguments.Args>(programName = "DataCollectorKitsu.Console")
+    let parser = ArgumentParser.Create<CliArguments.Args>(programName = "DataCollectorKitsu.Console")
     let results = parser.Parse(argv)
-    let id = results.GetResult(DataCollectorKitsu.Console.CliArguments.Id, 1)
+    let id = results.GetResult(CliArguments.Id, 1)
 
     let env = getEnvironment ()
-    let config = loadConfiguration env
+    let config = Configuration.loadConfiguration env
 
-    setupLogger config
+    Logger.setupLogger config
 
     let version = getAssemblyVersion ()
     Log.Information("Assembly Version: {Version}", version)

@@ -1,10 +1,11 @@
-module DataCollectorKitsu.Console.Common
+namespace DataCollectorKitsu.Console
 
 open System
 
-let getAssemblyVersion () =
-    System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString()
+module internal Common =
+    let getAssemblyVersion () =
+        System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString()
 
-let getEnvironment () =
-    let envVar = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")
-    if isNull envVar then "Debug" else envVar
+    let getEnvironment () =
+        let envVar = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")
+        if isNull envVar then "Debug" else envVar
