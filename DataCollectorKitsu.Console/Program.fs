@@ -33,8 +33,8 @@ let main argv =
 
     let exitCode = 
         match result with
-        | Ok content ->
-            Log.Information("Content: {Content}", content)
+        | Ok animeResponse ->
+            Log.Information("Anime fetched: {AnimeId} - {CanonicalTitle}", animeResponse.data.id, animeResponse.data.attributes.canonicalTitle)
             0
         | Error error ->
             Log.Error("Error: {Error}", error)
